@@ -1,17 +1,18 @@
 import tensorflow as tf
 from tensorflow.keras import layers, Model
 import numpy as np
+import keras
 
 
 # ===== 設定 =====
 n_mels = 128  # メルスペクトログラムの周波数ビン数
-frames = 173  # STFTフレーム数 (例: 2秒 @ 44.1kHz, hop_length=256)
-cond_dim = 27  # 条件ベクトル次元
+frames = 345  # STFTフレーム数 (例: 2秒 @ 44.1kHz, hop_length=256)
+cond_dim = 32  # 条件ベクトル次元
 latent_dim = 64  # 潜在次元
 
 
 # ===== Encoder =====
-def build_encoder(input_shape=(n_mels, frames, 1), cond_dim=27, latent_dim=64):
+def build_encoder(input_shape=(n_mels, frames, 2), cond_dim=32, latent_dim=64):
     spec_in = layers.Input(shape=input_shape, name="spectrogram")
     cond_in = layers.Input(shape=(cond_dim,), name="condition")
 
@@ -41,7 +42,7 @@ class Sampling(layers.Layer):
 
 
 # ===== Decoder =====
-def build_decoder(output_shape=(n_mels, frames, 1), cond_dim=27, latent_dim=64):
+def build_decoder(output_shape=(n_mels, frames, 2), cond_dim=32, latent_dim=64):
     z_in = layers.Input(shape=(latent_dim,), name="z")
     cond_in = layers.Input(shape=(cond_dim,), name="condition")
 
@@ -83,11 +84,29 @@ def train_step(model, x, cond):
 
 # ===== CVAEモデル =====
 class CVAE(Model):
+
+    @keras.saving.register_keras_serializable()
     def __init__(self, encoder, decoder, **kwargs):
         super(CVAE, self).__init__(**kwargs)
         self.encoder = encoder
         self.decoder = decoder
         self.sampling = Sampling()
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "encoder": keras.saving.serialize_keras_object(self.encoder),
+                "decoder": keras.saving.serialize_keras_object(self.decoder),
+            }
+        )
+        return config
+
+    @classmethod
+    def from_config(cls, config):
+        encoder = keras.saving.deserialize_keras_object(config["encoder"])
+        decoder = keras.saving.deserialize_keras_object(config["decoder"])
+        return cls(encoder, decoder)
 
     def call(self, inputs):
         x, cond = inputs

@@ -35,7 +35,7 @@ for epoch in range(epochs):
         total_loss += loss.numpy()
     print(f"Epoch {epoch+1}/{epochs}, Loss: {total_loss/len(dataset):.4f}")
 
-cvae.save("cvae_model")
+cvae.save("cvae_model.keras", save_format="keras")
 
 # ===== 学習例 =====
 # X_spec: (N, n_mels, frames, 1)
@@ -44,6 +44,6 @@ cvae.save("cvae_model")
 
 # 条件ラベル例
 cond_vec = make_condition_vector(
-    pitch=0, waveform_type=1, thickness=0.7, brightness=0.9
+    pitch=0, waveform_type=1, layer_waveform=1, thickness=0.7, brightness=0.9
 )
 waveform = generate_waveform(cvae, cond_vec)  # 先ほどのGriffin-Lim関数
