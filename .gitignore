@@ -1,4 +1,5 @@
 /.venv/
 /preset_wav/
 *.keras
+*.pyc
 /__pycache__/

@@ -7,12 +7,16 @@ import mido
 cvae = tf.keras.models.load_model(
     "cvae_model.keras",
     compile=False,
-    custom_objects={"CVAE": CVAE, "Sampling": Sampling},
+    custom_objects={
+        "CVAE": CVAE,
+        "Sampling": Sampling,
+        "Functional": tf.keras.models.Model,
+    },
 )
 
 # 条件ベクトルを作成
 cond_vec = make_condition_vector(
-    pitch=2,
+    pitch=4,
     waveform_type=0,
     layer_waveform=0,
     thickness=0.1,

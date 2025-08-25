@@ -12,9 +12,8 @@ with open("./preset.json") as f:
     preset_json = json.load(f)
 
 X_spec, X_cond = create_dataset(audio_dir, preset_json)
-
-print("X_spec:", X_spec.shape)  # (N, n_mels, frames, 1)
-print("X_cond:", X_cond.shape)  # (N, 27)
+print("X_spec:", X_spec.shape)  # (N, n_mels, frames, 2, 1)
+print("X_cond:", X_cond.shape)  # (N, 32)
 
 batch_size = 16
 dataset = tf.data.Dataset.from_tensor_slices((X_spec, X_cond))
@@ -44,6 +43,6 @@ cvae.save("cvae_model.keras", save_format="keras")
 
 # 条件ラベル例
 cond_vec = make_condition_vector(
-    pitch=0, waveform_type=1, layer_waveform=1, thickness=0.7, brightness=0.9
+    pitch=2, waveform_type=1, layer_waveform=1, thickness=0.7, brightness=0.9
 )
 waveform = generate_waveform(cvae, cond_vec)  # 先ほどのGriffin-Lim関数
