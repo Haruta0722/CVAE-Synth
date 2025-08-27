@@ -2,7 +2,6 @@ import numpy as np
 import librosa
 import tensorflow as tf
 import os
-import soundfile as sf
 
 
 def ms_to_lr(mid_wave, side_wave):
@@ -64,8 +63,7 @@ def generate_waveform(
     # --- M/S → L/R に変換 ---
     stereo_wave = ms_to_lr(mid_wave, side_wave)  # shape: (samples, 2)
     # 保存
-    sf.write("generated.wav", stereo_wave, 44100)
-    return stereo_wave
+    return stereo_wave  # shape: (samples, 2)
 
 
 def make_condition_vector(

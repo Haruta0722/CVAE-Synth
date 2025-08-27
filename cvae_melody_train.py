@@ -45,4 +45,4 @@ cvae.save("cvae_model.keras", save_format="keras")
 cond_vec = make_condition_vector(
     pitch=2, waveform_type=1, layer_waveform=1, thickness=0.7, brightness=0.9
 )
-waveform = generate_waveform(cvae, cond_vec)  # 先ほどのGriffin-Lim関数
+generate_waveform(cvae, cond_vec)  # 先ほどのGriffin-Lim関数

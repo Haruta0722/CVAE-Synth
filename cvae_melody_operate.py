@@ -2,6 +2,7 @@ import tensorflow as tf
 from cvae_melody_utils import make_condition_vector, generate_waveform
 from cvae_melody import CVAE, Sampling
 import mido
+import sounddevice as sd
 
 # 学習済みモデル読み込み
 cvae = tf.keras.models.load_model(
@@ -15,25 +16,6 @@ cvae = tf.keras.models.load_model(
 )
 
 # 条件ベクトルを作成
-cond_vec = make_condition_vector(
-    pitch=4,
-    waveform_type=0,
-    layer_waveform=0,
-    thickness=0.1,
-    brightness=1.0,
-    distortion=0.0,
-    delay_reverb=0.3,
-    texture=0.0,
-    lowpass=0.0,
-    highpass=1.0,
-    sweep_close=0.0,
-    sweep_open=0.0,
-    attack=1.0,
-    release=0.0,
-    side=0.0,
-)
-
-waveform = generate_waveform(cvae, cond_vec)
 
 
 # 利用可能なMIDI入力ポートを表示
@@ -76,10 +58,32 @@ with mido.open_input(port_name) as inport:
         if msg.type == "note_on" and msg.velocity > 0:
             note_number = msg.note
             note_name = note_number_to_name(note_number)
+            cond_vec = make_condition_vector(
+                pitch=note_number % 12,
+                waveform_type=0,
+                layer_waveform=0,
+                thickness=0.1,
+                brightness=1.0,
+                distortion=0.0,
+                delay_reverb=0.3,
+                texture=0.0,
+                lowpass=0.0,
+                highpass=1.0,
+                sweep_close=0.0,
+                sweep_open=0.0,
+                attack=1.0,
+                release=0.0,
+                side=0.0,
+            )
+            waveform = generate_waveform(cvae, cond_vec)
+            sd.play(waveform, 44100)
+            sd.wait()
             print(f"Note ON : {note_number} ({note_name})")
+
         elif msg.type == "note_off" or (
             msg.type == "note_on" and msg.velocity == 0
         ):
             note_number = msg.note
             note_name = note_number_to_name(note_number)
             print(f"Note OFF: {note_number} ({note_name})")
+            sd.stop()
